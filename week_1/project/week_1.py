@@ -1,9 +1,18 @@
 import csv
 from datetime import datetime
+from distutils.command.config import config
 from typing import List
 
-from dagster import In, Nothing, Out, job, op, usable_as_dagster_type
+from dagster import In, Nothing, Out, job, op, graph, usable_as_dagster_type
 from pydantic import BaseModel
+
+from dagster.utils.yaml_utils import load_yaml_from_path
+from dagster.utils import file_relative_path
+
+week1_config = load_yaml_from_path(
+    file_relative_path(__file__, "./config.yaml")
+)
+
 
 
 @usable_as_dagster_type(description="Stock data")
@@ -56,7 +65,7 @@ def get_s3_data(context):
     description="Aggregate stock data",
 )
 def process_data(stocks: List[Stock]) -> Aggregation:
-    top_high = sorted(stocks, key=lambda x: x.high, reverse=True)[0]
+    top_high = max(stocks, key=lambda x: x.high)
     return Aggregation(date=top_high.date, high=top_high.high)
 
 
@@ -71,9 +80,16 @@ def process_data(stocks: List[Stock]) -> Aggregation:
 def put_redis_data(aggregation: Aggregation):
     pass
 
-
-@job
-def week_1_pipeline():
+@graph
+def week_1_graph():
     stocks = get_s3_data()
     aggregation = process_data(stocks)
     put_redis_data(aggregation)
+
+@job(
+    name="Week 1 Job",
+    description="This is the first week of the course",
+    config_schema=week1_config
+)
+def week_1_pipeline(context):
+    week_1_graph.to_job(name="week1_job", config=week1_config)
