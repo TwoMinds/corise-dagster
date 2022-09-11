@@ -80,7 +80,7 @@ def get_run_config(s3_key: str):
                 "bucket": "dagster",
                 "access_key": "test",
                 "secret_key": "test",
-                "endpoint_url": "http://host.docker.internal:4566",
+                "endpoint_url": "http://localstack:4566",
             }
         },
         "redis": {
