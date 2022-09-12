@@ -61,6 +61,5 @@ get_s3_data_docker, process_data_docker, put_redis_data_docker = with_resources(
                 "port": 6379,
             }
         },
-    "ops": {"get_s3_data": {"config": {"s3_key": "prefix/stock.csv"}}},
         },
 )
